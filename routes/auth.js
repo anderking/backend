@@ -1,15 +1,22 @@
 'use strict'
 
-//var AuthController = require('../controllers/auth');
+var AuthController = require('../controllers/auth');
 
-//router.post('/login', UserController.getUser);
-//router.get('/register', UserController.saveUser);
-//router.get('/logout', UserController.getUsers);
+module.exports = (app,passport) =>
+{
+	app.get('/', AuthController.home);
+	app.get('/api', AuthController.home);
+	app.get('/api/login', AuthController.login);
+	app.get('/api/register', AuthController.register);
+	app.get('/api/logout', AuthController.logout);
+}
 
+/*
 module.exports = (app, passport) => {
 	
 	//app.get('/', AuthController.home);
-	app.get('/', (res,req) =>{
+	app.get('/', (req,res) =>{
 		res.render('index');
 	});
 }
+*/

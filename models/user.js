@@ -1,14 +1,25 @@
 'use strict'
 
-var mongoose = require('mongoose');
-var Schema = mongoose.Schema;
+const mongoose = require('mongoose');
+const bcrypt = require('bcrypt-nodejs');
 
-var UserSchema = Schema({
-	name: String,
-	job: String,
-	web: String,
-	description: String,
+const { Schema } = mongoose;
+
+const userSchema = new Schema({
+  email: String,
+  password: String,
+  name: String,
+  job: String,
+  web: String,
+  description: String,
 });
 
-module.exports = mongoose.model('User', UserSchema);
-// projects  --> guarda los documents en la coleccion
+userSchema.methods.encryptPassword = (password) => {
+  return bcrypt.hashSync(password, bcrypt.genSaltSync(10));
+};
+
+userSchema.methods.comparePassword= function (password) {
+  return bcrypt.compareSync(password, this.password);
+};
+
+module.exports = mongoose.model('user', userSchema);
