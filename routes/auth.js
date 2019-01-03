@@ -10,13 +10,3 @@ module.exports = (app,passport) =>
 	app.get('/api/register', AuthController.register);
 	app.get('/api/logout', AuthController.logout);
 }
-
-/*
-module.exports = (app, passport) => {
-	
-	//app.get('/', AuthController.home);
-	app.get('/', (req,res) =>{
-		res.render('index');
-	});
-}
-*/
