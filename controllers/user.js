@@ -1,10 +1,12 @@
 'use strict'
 
 var User = require('../models/user');
+var fs = require('fs');
+var path = require('path');
 
 var controller = {
 	
-	saveUser: function(req, res){
+/*	saveUser: function(req, res){
 		var user = new User();
 		var params = req.body;
 
@@ -23,7 +25,7 @@ var controller = {
 				message: "Usuario Creado"
 			});
 		});
-	},
+	},*/
 
 	getUser: function(req, res){
 		var userId = req.params.id;
@@ -87,6 +89,58 @@ var controller = {
 			});
 		});
 	},
+
+	uploadImage: function(req, res){
+		var userId = req.params.id;
+		var fileName = 'Imagen no subida...';
+
+		if(req.files){
+			var filePath = req.files.image.path;
+			var fileSplit = filePath.split('\\');
+			var fileName = fileSplit[1];
+			var extSplit = fileName.split('\.');
+			var fileExt = extSplit[1];
+
+			if(fileExt == 'png' || fileExt == 'jpg' || fileExt == 'jpeg' || fileExt == 'gif'){
+
+				User.findByIdAndUpdate(userId, {image: fileName}, {new: true}, (err, userUpdated) =>
+				{
+					if(err) return res.status(500).send({message: 'La imagen no se ha subido'});
+
+					if(!userUpdated) return res.status(404).send({message: 'El usuario no existe y no se ha asignado la imagen'});
+
+					return res.status(200).send({
+						project: userUpdated
+					});
+				});
+
+			}else{
+				fs.unlink(filePath, (err) => {
+					return res.status(200).send({message: 'La extensión no es válida'});
+				});
+			}
+
+		}else{
+			return res.status(200).send({
+				message: fileName
+			});
+		}
+
+	},
+
+	getImageFile: function(req, res){
+		var file = req.params.image; //Capturo el nombre del archivo con su extension
+		var path_file = './img/'+file; // le agrego el prefijo en donde se guardan
+		fs.exists(path_file, (exists) => {
+			if(exists){
+				return res.sendFile(path.resolve(path_file)); //devuelvo la ruta completa de la img desde la raiz
+			}else{
+				return res.status(200).send({
+					message: "No existe la imagen..."
+				});
+			}
+		});
+	}
 
 
 };

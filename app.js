@@ -27,10 +27,12 @@ app.use((req, res, next) => {
 // cargar archivos rutas
 var project_routes = require('./routes/project');
 var user_routes = require('./routes/user');
+var auth_routes = require('./routes/auth');
 
 // rutas
 app.use('/api', project_routes);
 app.use('/api', user_routes);
+app.use('/api', auth_routes);
 
 
 // exportar

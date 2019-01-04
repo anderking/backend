@@ -1,25 +1,38 @@
 'use strict'
 
 const mongoose = require('mongoose');
+const Schema = mongoose.Schema;
 const bcrypt = require('bcrypt-nodejs');
+const crypto = require('crypto');
 
-const { Schema } = mongoose;
-
-const userSchema = new Schema({
-  email: String,
-  password: String,
+const UserSchema = new Schema({
+  email: { type: String, unique: true, lowercase: true },
+  password: { type: String, /*select: false */},
+  name: String,
   name: String,
   job: String,
   web: String,
   description: String,
+  image: String,
+  signupDate: { type: Date, default: Date.now() },
+  lastLogin: Date
+}, {
+    versionKey: false
 });
 
-userSchema.methods.encryptPassword = (password) => {
-  return bcrypt.hashSync(password, bcrypt.genSaltSync(10));
-};
+UserSchema.pre('save', (next) => {
+  let user = this
 
-userSchema.methods.comparePassword= function (password) {
-  return bcrypt.compareSync(password, this.password);
-};
+  bcrypt.genSalt(10, (err, salt) => {
+    if (err) return next(err)
 
-module.exports = mongoose.model('user', userSchema);
+    bcrypt.hash(user.password, salt, null, (err, hash) => {
+      if (err) return next(err)
+
+      user.password = hash;
+      next();
+    })
+  })
+});
+
+module.exports = mongoose.model('User', UserSchema);

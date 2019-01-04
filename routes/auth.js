@@ -1,12 +1,15 @@
 'use strict'
 
-var AuthController = require('../controllers/auth');
+const express = require('express');
+const AuthController = require('../controllers/auth');
+const auth = require('../middlewares/auth');
+const router = express.Router();
+const User = require('../models/user');
 
-module.exports = (app,passport) =>
-{
-	app.get('/', AuthController.home);
-	app.get('/api', AuthController.home);
-	app.get('/api/login', AuthController.login);
-	app.get('/api/register', AuthController.register);
-	app.get('/api/logout', AuthController.logout);
-}
+router.post('/signup', AuthController.signUp);
+router.post('/signin', AuthController.signIn);
+router.get('/private', auth, (req, res) => {
+  res.status(200).send({ message: 'Tienes acceso' });
+});
+
+module.exports = router;

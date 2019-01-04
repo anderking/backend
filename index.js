@@ -1,26 +1,35 @@
 'use strict'
 
-var mongoose = require('mongoose')
-var app = require('./app');
-var { url } = require('./config/database');
-var port = 80;
+const mongoose = require('mongoose');
+const app = require('./app');
+const config = require('./config/config');
 
 mongoose.Promise = global.Promise;
-mongoose.connect(url,{
-	useNewUrlParser:true
-})
-	app.listen(port, () => {
-    	console.log('Servidor corriendo correctamente en la url: localhost:'+port+'');
-    });
-/*
 
-mongoose.connect('mongodb://localhost:27017/portafolio')
-	.then(()=>{
-		console.log('Conexion a la BD exitosa');
-		// Creacion del servidor
-    	app.listen(port, () => {
-    		console.log('Servidor corriendo correctamente en la url: localhost:'+port+'');
-    	});
-	})
-	.catch(err=>console.log(err));
-*/
+mongoose.connect
+(
+	config.db,
+	{//desabilita los mensajes de advertencia
+		useNewUrlParser:true,
+		useFindAndModify:true,
+		useCreateIndex:true
+	},
+	
+	(err, res) =>
+	{
+		if (err)
+		{
+	    	return console.log(`Error al conectar a la base de datos: ${err}`);
+	  	}
+
+	  	console.log('Conexión a la base de datos establecida...');
+		
+		app.listen
+		(
+			config.port, () =>
+			{
+				console.log(`API REST corriendo en http://localhost:${config.port}`);
+			}
+		);
+	}
+);
