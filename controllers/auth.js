@@ -7,27 +7,50 @@ var controller = {
 
 	signUp: function (req, res)
 	{
-		const user = new User(
-		{
-			email: req.body.email,
-			name: req.body.name,
-			password: req.body.password
-		});
-		
-		user.save( (err) =>
-		{
-			if (err)
+		User.find
+		(
 			{
-				return res.status(500).send({
-					message: `Error al crear el usuario: ${err}`,
-				});
+				email: req.body.email
+			},
+			(err, user) =>
+			{
+				if (err)
+				{
+					return res.status(500).send({ message: err });
+				}
+				if(req.body.email==undefined){
+					return res.status(404).send({ message: 'No se encuentra el campo email en el formulario' });	
+				}
+				if(req.body.password==undefined){
+					return res.status(404).send({ message: 'No se encuentra el campo password en el formulario' });	
+				}
+				if (user.length>0)
+				{
+					return res.status(404).send({ message: 'El email del usuario ya esta registrado' });
+				}else
+				{
+					const user = new User(
+					{
+						email: req.body.email,
+						password: req.body.password
+					});
+
+					user.save( (err) =>
+					{
+						if (err)
+						{
+							return res.status(500).send({
+								message: `Error al crear el usuario: ${err}`,
+							});
+						}
+						return res.status(201).send({
+							token: service.createToken(user),
+							user
+						});
+					});
+				}
 			}
-			return res.status(201).send({
-				token: service.createToken(user),
-				user,
-				message: `El password del usuario: ${user.password}`
-			});
-		});
+		);
 	},
 
 	signIn: function (req, res)
@@ -43,21 +66,30 @@ var controller = {
 				{
 					return res.status(500).send({ message: err });
 				}
-				if(req.body.email==null){
-					return res.status(404).send({ message: 'No se encuentra el campo email' });	
+				if(req.body.email==undefined){
+					return res.status(404).send({ message: 'No se encuentra el campo email en el formulario' });	
+				}
+				if(req.body.password==undefined){
+					return res.status(404).send({ message: 'No se encuentra el campo password en el formulario' });	
 				}
 				if (user.length<=0)
 				{
-					return res.status(404).send({ message: 'No existe el usuario' });
+					return res.status(404).send({ message: 'No existe el email del usuario' });
 				}else
 				{
-					req.user = user;
-					res.status(200).send(
+					if(req.body.password!=user[0].password){
+						console.log( req.body.password,user[0].password )
+						return res.status(404).send({ message: 'La contraseña no coincide' });
+					}else
 					{
-						message: 'Te has logueado correctamente',
-						user,
-						token: service.createToken(user)
-					});
+						req.user = user;
+						res.status(200).send(
+						{
+							message: 'Te has logueado correctamente',
+							user,
+							token: service.createToken(user)
+						});
+					}
 				}
 			}
 		);

@@ -9,7 +9,7 @@ function isAuth (req, res, next) {
 
   const token = req.headers.authorization.split(' ')[1]
 
-  if(token==null){
+  if(token==='null'){
     return res.status(403).send({ message: 'No tienes autorización' });
   }
   

@@ -9,7 +9,8 @@ var ProjectSchema = Schema({
 	category: String,
 	year: Number,
 	langs: String,
-	image: String
+	image: String,
+	userID: { type: mongoose.Schema.Types.ObjectId, ref: "User" } 
 }, {
     versionKey: false
 });

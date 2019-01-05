@@ -3,19 +3,21 @@
 var Project = require('../models/project');
 var fs = require('fs');
 var path = require('path');
+const User = require('../models/user');
 
 var controller = {
 	
 	saveProject: function(req, res){
 		var project = new Project();
 		var params = req.body;
-
+		console.log(params);
 		project.name = params.name;
 		project.description = params.description;
 		project.category = params.category;
 		project.year = params.year;
 		project.langs = params.langs;
 		project.image = null;
+		project.userID = params.userID;
 
 		project.save((err, projectStored) => {
 			if(err) return res.status(500).send({message: 'Error al guardar el documento.'});
@@ -47,9 +49,32 @@ var controller = {
 		});
 	},
 
-	getProjects: function(req, res){
+	getProjectsUser: function(req, res){
+		
+		var userID = req.params.id;
+		console.log(userID);
 
-		Project.find({}).sort('-_id').exec((err, projects) => {
+		if(userID == null) return res.status(404).send({message: 'El usuario no existe.'});
+
+		Project.find({userID: userID}, (err, projects) => {
+
+			if(err) return res.status(500).send({message: 'Error al devolver los datos.'});
+
+			if(!projects) return res.status(404).send({message: 'El id del proyecto no existe.'});
+
+			return res.status(200).send({
+				projects
+			});
+
+		});
+
+	},
+
+	getProjects: function(req, res){
+		
+		Project.find()
+		.populate('userID')
+		.sort('-_id').exec((err, projects) => {
 
 			if(err) return res.status(500).send({message: 'Error al devolver los datos.'});
 

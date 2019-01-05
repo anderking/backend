@@ -13,10 +13,10 @@ router.get('/user/:id?', auth, UserController.getUser);
 router.get('/users', auth, UserController.getUsers);
 router.put('/user/:id', auth, UserController.updateUser);
 router.delete('/user/:id', auth, UserController.deleteUser);
-router.post('/upload-image-user/:id', auth, multipartMiddleware, UserController.uploadImage);
-router.get('/get-image-user/:image', auth, UserController.getImageFile);
+router.post('/upload-image-user/:id', multipartMiddleware, UserController.uploadImage);
+router.get('/get-image-user/:image', UserController.getImageFile);
 
-router.get('/events', (req,res) => {
+router.get('/events',  (req,res) => {
   let events = [
     {
       "_id": "1",
