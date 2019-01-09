@@ -28,11 +28,14 @@ app.use((req, res, next) => {
 var project_routes = require('./routes/project');
 var user_routes = require('./routes/user');
 var auth_routes = require('./routes/auth');
+var like_routes = require('./routes/like');
+
 
 // rutas
 app.use('/api', project_routes);
 app.use('/api', user_routes);
 app.use('/api', auth_routes);
+app.use('/api', like_routes);
 
 
 // exportar

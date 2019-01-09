@@ -24,6 +24,9 @@ var controller = {
 				if(req.body.password==undefined){
 					return res.status(404).send({ message: 'No se encuentra el campo password en el formulario' });	
 				}
+				if(req.body.tipo==undefined){
+					return res.status(404).send({ message: 'No se encuentra el campo tipo en el formulario' });	
+				}
 				if (user.length>0)
 				{
 					return res.status(404).send({ message: 'El email del usuario ya esta registrado' });
@@ -32,7 +35,8 @@ var controller = {
 					const user = new User(
 					{
 						email: req.body.email,
-						password: req.body.password
+						password: req.body.password,
+						tipo: req.body.tipo,
 					});
 
 					user.save( (err) =>

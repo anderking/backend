@@ -52,7 +52,7 @@ var controller = {
 	getProjectsUser: function(req, res){
 		
 		var userID = req.params.id;
-		console.log(userID);
+		
 
 		if(userID == null) return res.status(404).send({message: 'El usuario no existe.'});
 
@@ -79,9 +79,16 @@ var controller = {
 			if(err) return res.status(500).send({message: 'Error al devolver los datos.'});
 
 			if(!projects) return res.status(404).send({message: 'No hay projectos que mostrar.'});
+			
+			for (var i=0; i<projects.length;i++){
+				console.log(projects.name);
+
+			}
 
 			return res.status(200).send({projects});
+
 		});
+
 
 	},
 
@@ -104,7 +111,6 @@ var controller = {
 
 	deleteProject: function(req, res){
 		var projectId = req.params.id;
-
 		Project.findByIdAndRemove(projectId, (err, projectRemoved) => {
 			if(err) return res.status(500).send({message: 'No se ha podido borrar el proyecto'});
 
@@ -166,7 +172,9 @@ var controller = {
 				});
 			}
 		});
-	}
+	},
+
+
 
 };
 

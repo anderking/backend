@@ -9,13 +9,13 @@ const UserSchema = new Schema({
   email: { type: String, unique: true, lowercase: true },
   password: { type: String, /*select: false */},
   name: String,
-  name: String,
   job: String,
   web: String,
   description: String,
   image: String,
   signupDate: { type: Date, default: Date.now() },
-  lastLogin: Date
+  lastLogin: Date,
+  tipo:String,
 }, {
     versionKey: false
 });
@@ -33,6 +33,12 @@ UserSchema.pre('save', (next) => {
       next();
     })
   })
+});
+
+UserSchema.pre('remove', function(next) { 
+    Sweepstakes.remove({user_id: this._id}).exec(); 
+    Submission.remove({user_id: this._id}).exec(); 
+    next(); 
 });
 
 module.exports = mongoose.model('User', UserSchema);

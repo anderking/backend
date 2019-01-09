@@ -5,27 +5,6 @@ var fs = require('fs');
 var path = require('path');
 
 var controller = {
-	
-/*	saveUser: function(req, res){
-		var user = new User();
-		var params = req.body;
-
-		user.name = params.name;
-		user.job = params.job;
-		user.web = params.web;
-		user.description = params.description;
-
-		user.save((err, userStored) => {
-			if(err) return res.status(500).send({message: 'Error al guardar el documento.'});
-
-			if(!userStored) return res.status(404).send({message: 'No se ha podido guardar el Usuario.'});
-
-			return res.status(200).send({
-				user: userStored,
-				message: "Usuario Creado"
-			});
-		});
-	},*/
 
 	getUser: function(req, res){
 		var userId = req.params.id;

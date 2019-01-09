@@ -10,7 +10,8 @@ var ProjectSchema = Schema({
 	year: Number,
 	langs: String,
 	image: String,
-	userID: { type: mongoose.Schema.Types.ObjectId, ref: "User" } 
+	userID: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+	
 }, {
     versionKey: false
 });
