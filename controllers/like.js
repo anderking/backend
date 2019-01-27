@@ -2,33 +2,30 @@
 
 var Like = require('../models/like');
 var User = require('../models/user');
-var Project = require('../models/project');
+var Publication = require('../models/publication');
 
 var controller =
 {
-	upLikes: function(req, res)
+	upLike: function(req, res)
 	{
 		Like.find
 		(
 			{
 			    userID : { $in: [req.body.userID] },
-			    projectID : { $in: [req.body.projectID] }
+			    publicationID : { $in: [req.params.idP] }
 			},
 			(err, like) =>
 			{
 				if (err)
 				{
-					return res.status(500).send({ message: err });
+					return res.status(500).send({ message: "Error en el Servidor" });
 				}
 				if(req.body.userID==undefined){
 					return res.status(404).send({ message: 'No se encuentra el campo userID en la solicitud' });	
 				}
-				if(req.body.projectID==undefined){
-					return res.status(404).send({ message: 'No se encuentra el campo projectID en la solicitud' });	
-				}
 				if(like.length>0)
 				{
-					return res.status(404).send({ message: 'Ya le diste like a este proyecto' });
+					return res.status(404).send({ message: 'Ya le diste like a esta publicación' });
 				}
 				else
 				{
@@ -36,11 +33,11 @@ var controller =
 					var params = req.body;
 
 					like.userID = params.userID;
-					like.projectID = params.projectID;
+					like.publicationID = req.params.idP;
 
 					like.save((err, likeStored) =>
 					{
-						if(err) return res.status(500).send({message: 'Error al guardar el documento.'});
+						if(err) return res.status(500).send({message: 'Error en Servidor.'});
 
 						if(!likeStored) return res.status(404).send({message: 'No se ha podido guardar el like.'});
 
@@ -54,20 +51,16 @@ var controller =
 		)
 	},
 
-	disLikes: function(req, res)
+	disLike: function(req, res)
 	{
-		var userID = req.body.userID;
-		var projectID = req.body.projectID;
-
 		Like.remove
 		(
 			{
 				userID : { $in: [req.body.userID] },
-			    projectID : { $in: [req.body.projectID] }
-
+			    publicationID : { $in: [req.params.idP] }
 			},(err, like) =>
 			{
-				if(err) return res.status(500).send({message: 'No se ha podido borrar el like'});
+				if(err) return res.status(500).send({message: 'Error en el Servidor'});
 
 				if(like.n==0) return res.status(404).send({message: "Ya fue eliminado."});
 
@@ -80,18 +73,60 @@ var controller =
 		);
 	},
 
+	getLikesPublication: function(req, res)
+	{
+		Like.find
+		(
+			{
+			    publicationID : req.params.idP
+			},
+			(err, likesPublication) =>
+			{
+				if (err) return res.status(500).send({ message: err });
+
+				if(!likesPublication) return res.status(404).send({message: 'No hay likes de este proyecto.'});
+
+				return res.status(200).send({
+					likesPublication
+				})
+				
+			}
+		)
+	},
+
+	getLikesUsers: function(req, res)
+	{
+		Like.find
+		(
+			{
+			    userID : req.params.idU
+			},
+			(err, likesUsers) =>
+			{
+				if (err) return res.status(500).send({ message: err });
+
+				if(!likesUsers) return res.status(404).send({message: 'Este usuario no tiene likes.'});
+
+				return res.status(200).send({
+					likesUsers
+				})
+				
+			}
+		)
+	},
+
 	getLikes: function(req, res)
 	{
 		Like.find
 		(
 			{
-			    projectID : req.params.id
+
 			},
 			(err, likes) =>
 			{
 				if (err) return res.status(500).send({ message: err });
 
-				if(!likes) return res.status(404).send({message: 'No hay likes de este proyecto.'});
+				if(!likes) return res.status(404).send({message: 'Este usuario no tiene likes.'});
 
 				return res.status(200).send({
 					likes
@@ -107,7 +142,7 @@ var controller =
 		(
 			{
 			    userID : { $in: [req.params.idU] },
-			    projectID : { $in: [req.params.idP] }
+			    publicationID : { $in: [req.params.idP] }
 			},
 			(err, like) =>
 			{

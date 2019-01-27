@@ -3,17 +3,16 @@
 var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
 
-var ProjectSchema = Schema({
+var EmpresaSchema = Schema({
 	name: String,
-	description: String,
-	category: String,
-	year: Number,
-	langs: String,
-	image: String,
+	rif: { type: String, unique: true },
+	telefono: String,
+	direccion: String,
+	estado: String,
 	userID: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
 	
 }, {
     versionKey: false
 });
 
-module.exports = mongoose.model('Project', ProjectSchema);
+module.exports = mongoose.model('Empresa', EmpresaSchema);

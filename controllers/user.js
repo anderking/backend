@@ -1,10 +1,66 @@
 'use strict'
 
 var User = require('../models/user');
+var Publication = require('../models/publication');
+var Persona = require('../models/persona');
+var Empresa = require('../models/empresa');
+var Like = require('../models/like');
+
 var fs = require('fs');
 var path = require('path');
 
 var controller = {
+
+	saveUser: function(req, res)
+	{
+		User.find
+		(
+			{
+				email: req.body.email
+			},
+			(err, user) =>
+			{
+				if (err)
+				{
+					return res.status(500).send({ message: err });
+				}
+				if(req.body.email==undefined){
+					return res.status(404).send({ message: 'No se encuentra el campo email en el formulario' });	
+				}
+				if(req.body.password==undefined){
+					return res.status(404).send({ message: 'No se encuentra el campo password en el formulario' });	
+				}
+				if(req.body.tipo==undefined){
+					return res.status(404).send({ message: 'No se encuentra el campo tipo en el formulario' });	
+				}
+				if (user.length>0)
+				{
+					return res.status(404).send({ message: 'El email del usuario ya esta registrado' });
+				}else
+				{
+					const user = new User(
+					{
+						email: req.body.email,
+						password: req.body.password,
+						tipo: req.body.tipo,
+						description: req.body.description,
+					});
+
+					user.save((err, userStored) =>
+					{
+						if(err) return res.status(500).send({message: 'Error en el Servidor.'});
+
+						if(!userStored) return res.status(404).send({message: 'No se puede guardar el usuario'});
+						
+						return res.status(200).send({
+							user: userStored,
+							message: "Usuario Creado Correctamente"
+						});
+					});
+				}
+			}
+		);
+	},
 
 	getUser: function(req, res){
 		var userId = req.params.id;
@@ -13,7 +69,7 @@ var controller = {
 
 		User.findById(userId, (err, user) => {
 
-			if(err) return res.status(500).send({message: 'Error al devolver los datos.'});
+			if(err) return res.status(500).send({message: 'Error en el Servidor.'});
 
 			if(!user) return res.status(404).send({message: 'El id del Usuario no existe.'});
 
@@ -28,7 +84,24 @@ var controller = {
 
 		User.find({}).sort('-_id').exec((err, users) => {
 
-			if(err) return res.status(500).send({message: 'Error al devolver los datos.'});
+			if(err) return res.status(500).send({message: 'Error en el Servidor.'});
+
+			if(!users) return res.status(404).send({message: 'No hay Usuarios que mostrar.'});
+
+			return res.status(200).send({users});
+		});
+
+	},
+
+	getUsersExcept: function(req, res){
+		var userId = req.params.id;
+
+		User.find
+		(
+			{ "_id": { $ne: userId } }
+		).sort('-_id').exec((err, users) => {
+
+			if(err) return res.status(500).send({message: 'Error en el Servidor.'});
 
 			if(!users) return res.status(404).send({message: 'No hay Usuarios que mostrar.'});
 
@@ -42,13 +115,13 @@ var controller = {
 		var update = req.body;
 
 		User.findByIdAndUpdate(userId, update, {new:true}, (err, userUpdated) => {
-			if(err) return res.status(500).send({message: 'Error al actualizar'});
-
-			if(!userUpdated) return res.status(404).send({message: 'No existe el Usuario para actualizar'});
+			if(err) return res.status(500).send({message: 'Este correo ya existe, utilice otro por favor!'});
+			
+			if(!userUpdated) return res.status(404).send({message: 'Id del usuario no existe'});
 
 			return res.status(200).send({
 				user: userUpdated,
-				message: "Usuario Actualizado"
+				message: "Datos Actualizados Correctamente"
 			});
 		});
 
@@ -57,16 +130,82 @@ var controller = {
 	deleteUser: function(req, res){
 		var userId = req.params.id;
 
-		User.findByIdAndRemove(userId, (err, userRemoved) => {
-			if(err) return res.status(500).send({message: 'No se ha podido borrar el Usuario'});
+		User.findById(userId, (err, user) =>
+		{
+			if(err) return res.status(500).send({message: 'Error en el Servidor'});
 
-			if(!userRemoved) return res.status(404).send({message: "No se puede eliminar ese Usuario."});
+			if(!user) return res.status(404).send({message: "Id del usuario no existe."});
+			
+			Publication.find({userID:userId}, (err, publications) =>{
+				if(publications.length>0)
+				{
+					for(var j=0; j<publications.length;j++)
+					{
+						Like.remove({publicationID : publications[j]._id},(err, likeRemoved) =>{});
+					}
+					Publication.remove({userID:userId},(err,publicationsRemoved)=>{
+						if(err) return res.status(500).send({message: 'No se ha podido borrar las publicaciones del usuario'});
+					});
+				}
+			});
 
-			return res.status(200).send({
-				user: userRemoved,
-				message: "Usuario Eliminado"
+			Persona.remove({userID:userId}, (err, personaRemoved) =>
+			{
+				if(err) return res.status(500).send({message: 'No se ha podido borrar la persona asociada al usuario'});
+			});
+
+			Empresa.remove({userID:userId}, (err, empresaRemoved) =>
+			{
+				if(err) return res.status(500).send({message: 'No se ha podido borrar la empresa asociada al usuario'});
+			});
+			
+			user.remove((err,userRemoved)=>
+			{
+				return res.status(200).send({
+					user: userRemoved,
+					message: "Usuario Eliminado Correctamente"
+				});
 			});
 		});
+	},
+
+	deleteUsers: function(req, res)
+	{	
+		var userId = req.params.id;
+
+		User.find({ "_id": { $ne: userId } }, (err, users) =>
+		{
+			if(users.length>0)
+			{
+				for(var i=0; i<users.length;i++)
+				{
+					Persona.remove({userID:users[i]._id},(err,personaRemoved)=>{
+					});
+					
+					Empresa.remove({userID:users[i]._id},(err,empresaRemoved)=>{
+					});
+
+					Publication.find({userID:users[i]._id}, (err, publications) =>{
+						if(publications.length>0)
+						{
+							for(var j=0; j<publications.length;j++)
+							{
+								Like.remove({publicationID : publications[j]._id},(err, likeRemoved) =>{});
+							}
+							Publication.remove({userID:users[i-1]._id},(err,publicationsRemoved)=>{});
+						}
+					});
+				}
+				User.remove({ "_id": { $ne: userId } }, (err, usersRemoved) =>
+				{	
+					if(users) return res.status(200).send({
+						users: users,
+						message: 'Usuarios Eliminados Correctamente'
+					});
+				});
+			}
+		});
+
 	},
 
 	uploadImage: function(req, res){
